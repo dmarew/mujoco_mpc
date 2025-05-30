@@ -158,6 +158,8 @@ class iLQGPlanner : public Planner {
   int num_trajectory_ = 1;
   int num_rollouts_gui_ = 1;
   int derivative_skip_ = 0;
+  int smoothing_samples_ = 1;
+  double smoothing_sigma_ = 0.01;
 };
 
 }  // namespace mjpc

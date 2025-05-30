@@ -33,6 +33,7 @@
 #include "mjpc/trajectory.h"
 #include "mjpc/utilities.h"
 
+#define USE_MONTECARLO_RANDOM_SMOOTHING 1
 namespace mjpc {
 namespace mju = ::mujoco::util_mjpc;
 
@@ -253,6 +254,8 @@ void iLQGPlanner::GUI(mjUI& ui) {
        "Control\nFeedback\nValue\nNone"},
       {mjITEM_SLIDERINT, "Deriv. Skip", 2, &derivative_skip_, "0 16"},
       {mjITEM_CHECKINT, "Terminal Print", 2, &settings.verbose, ""},
+      {mjITEM_SLIDERINT, "Deriv. Smoothing Samples", 2, &smoothing_samples_, "1 32"},
+      {mjITEM_SLIDERNUM, "Deriv. Smoothing Sigma", 2, &smoothing_sigma_, "0 1"},
       {mjITEM_END}};
 
   // set number of trajectory slider limits
@@ -392,13 +395,21 @@ void iLQGPlanner::Iteration(int horizon, ThreadPool& pool) {
   auto model_derivative_start = std::chrono::steady_clock::now();
 
   // compute model and sensor Jacobians
+#if USE_MONTECARLO_RANDOM_SMOOTHING
+  model_derivative.ComputeSmoothed(
+      model, data_, candidate_policy[0].trajectory.states.data(),
+      candidate_policy[0].trajectory.actions.data(),
+      candidate_policy[0].trajectory.times.data(), dim_state,
+      dim_state_derivative, dim_action, dim_sensor, horizon,
+      settings.fd_tolerance, settings.fd_mode, pool, derivative_skip_, smoothing_sigma_, smoothing_samples_);
+#else
   model_derivative.Compute(
       model, data_, candidate_policy[0].trajectory.states.data(),
       candidate_policy[0].trajectory.actions.data(),
       candidate_policy[0].trajectory.times.data(), dim_state,
       dim_state_derivative, dim_action, dim_sensor, horizon,
       settings.fd_tolerance, settings.fd_mode, pool, derivative_skip_);
-
+#endif
   // stop timer
   double model_derivative_time = GetDuration(model_derivative_start);
 

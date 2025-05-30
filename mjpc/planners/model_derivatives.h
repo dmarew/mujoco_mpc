@@ -46,6 +46,15 @@ class ModelDerivatives {
                const double* x, const double* u, const double* h, int dim_state,
                int dim_state_derivative, int dim_action, int dim_sensor, int T,
                double tol, int mode, ThreadPool& pool, int skip = 0);
+  void ComputeSmoothed(const mjModel* m,
+                               const std::vector<UniqueMjData>& data,
+                               const double* x, const double* u,
+                               const double* h,
+                               int dim_state, int dim_sd,
+                               int dim_act,   int dim_sen,
+                               int T,
+                               double tol, int mode,
+                               ThreadPool& pool, int skip, double sigma=1.0, int nsamples=32);
 
   // Jacobians
   std::vector<double> A;  // model Jacobians wrt state
