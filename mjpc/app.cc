@@ -86,6 +86,14 @@ void controller(const mjModel* m, mjData* data) {
   if (data != d) {
     return;
   }
+  // safety checks
+  if (!sim || !sim->agent || !sim->m) {
+    return;
+  }
+  // no actuators, nothing to do
+  if (m->nu <= 0) {
+    return;
+  }
   // if simulation:
   if (sim->agent->action_enabled) {
     sim->agent->ActivePlanner().ActionFromPolicy(
@@ -94,10 +102,22 @@ void controller(const mjModel* m, mjData* data) {
   }
   // if noise
   if (!sim->agent->allocate_enabled && sim->uiloadrequest.load() == 0 &&
-      sim->ctrl_noise_std) {
-    for (int j = 0; j < sim->m->nu; j++) {
+      sim->ctrl_noise_std && ctrlnoise) {
+    for (int j = 0; j < m->nu; j++) {
       data->ctrl[j] += ctrlnoise[j];
     }
+  }
+
+  // Debug: print final torque commands (first 10 calls)
+  static int debug_counter = 0;
+  if (debug_counter < 10 && sim->agent->action_enabled && m->nu > 0) {
+    printf("Final torque command (step %d, nu=%d): ", debug_counter, m->nu);
+    for (int j = 0; j < m->nu; j++) {
+      printf("%.6f ", data->ctrl[j]);
+    }
+    printf("\n");
+    fflush(stdout);
+    debug_counter++;
   }
 }
 

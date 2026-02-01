@@ -196,6 +196,13 @@ add_custom_target(
           ${CMAKE_CURRENT_BINARY_DIR}/op3/op3.xml
           <${CMAKE_CURRENT_SOURCE_DIR}/op3/op3.xml.patch
 
+  COMMAND ${CMAKE_COMMAND} -E copy
+          ${menagerie_SOURCE_DIR}/unitree_g1/g1.xml
+          ${CMAKE_CURRENT_BINARY_DIR}/menagerie/unitree_g1/g1.xml
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+          ${menagerie_SOURCE_DIR}/unitree_g1/assets
+          ${CMAKE_CURRENT_BINARY_DIR}/menagerie/unitree_g1/assets
+
   COMMAND ${Python_EXECUTABLE}
           ${CMAKE_CURRENT_BINARY_DIR}/manipulation/merge_panda_robotiq.py
           ${CMAKE_CURRENT_BINARY_DIR}/manipulation/panda_robotiq.xml
